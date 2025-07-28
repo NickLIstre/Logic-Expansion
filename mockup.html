@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coupon Builder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-section {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+    }
+    textarea {
+      width: 100%;
+      height: 1rem;
+    }
+    .advanced-settings-collapsed {
+      display: none;
+    }
+    .advanced-settings-toggle {
+      cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .advanced-settings-toggle::after {
+      content: " ▼";
+      font-size: 0.9em;
+    }
+    .advanced-settings-toggle.open::after {
+      content: " ▲";
+  }
+  </style>
+</head>
+<body>
+  <h1>Coupon Builder</h1>
+
+<div class="form-group">
+    <label for="couponType">Select Coupon Type:</label>
+    <select id="couponType">
+      <option value="">-- Select --</option>
+      <option value="saveX">Save $ off cart</option>
+      <option value="savePercent">Save % off cart</option>
+      <option value="xForYShows">Total $ for # of shows</option>
+      <option value="xOffYTix">Save $ off on # of tix</option>
+      <option value="freeTier">Get # of Free Tier tickets</option>
+    </select>
+  </div>
+
+  <!-- Save $x off cart -->
+  <div class="form-section" id="saveX">
+  <div class="form-group">
+    <label>Amount ($):</label>
+    <input type="number" id="saveX_amount">
+  </div>
+
+  <!-- Advanced Settings -->
+  <div class="advanced-settings">
+    <h4>Advanced Settings</h4>
+    <div class="form-group">
+      <label>Min Order Size:</label>
+      <input type="number" id="saveX_minOrder">
+    </div>
+  </div>
+
+  <button id="generateSaveXBtn" type="button">Generate Code</button>
+  <textarea readonly id="saveX_title"></textarea>
+  <textarea readonly id="saveX_description"></textarea>
+  <textarea readonly id="saveX_code"></textarea>
+</div>
+
+<!-- Save x% off cart -->
+<div class="form-section" id="savePercent">
+  <div class="form-group">
+    <label>Percentage (%):</label>
+    <input type="number" id="savePercent_percent">
+  </div>
+
+  <!-- Advanced Settings -->
+  <div class="advanced-settings">
+    <h4>Advanced Settings</h4>
+    <div class="form-group">
+      <label>Min Order Size:</label>
+      <input type="number" id="saveX_minOrder">
+    </div>
+  </div>
+
+  <button id="generateSavePercentBtn" type="button">Generate Code</button>
+  <textarea readonly id="savePercent_title"></textarea>
+  <textarea readonly id="savePercent_description"></textarea>
+  <textarea readonly id="savePercent_code"></textarea>
+</div>
+
+<!-- Save $x for y shows -->
+<div class="form-section" id="xForYShows">
+  <div class="form-group">
+    <label>Total price for all shows ($):</label>
+    <input type="number" id="xForYShows_amount">
+  </div>
+  <div class="form-group">
+    <label># of shows:</label>
+    <input type="number" id="xForYShows_y">
+  </div>
+
+  <!-- Advanced Settings -->
+  <div class="advanced-settings">
+    <h4>Advanced Settings</h4>
+    <div class="form-group">
+      <label>Min Order Size:</label>
+      <input type="number" id="saveX_minOrder">
+    </div>
+    <div class="form-group">
+      <label>Only tickets to:</label>
+      <input type="text" id="saveX_onlyTicketsTo" placeholder="Show group or show name">
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="radio" name="saveX_pricing" value="total" checked>
+        Completely Free
+      </label>
+      <label>
+        <input type="radio" name="saveX_pricing" value="base">
+        Base Only
+      </label>
+    </div>
+    <div class="form-group">
+      <label>Order of application:</label>
+      <label>
+        <input type="radio" name="saveX_order" value="cheapest" checked>
+        Cheapest first (default)
+      </label>
+      <label>
+        <input type="radio" name="saveX_order" value="expensive">
+        Most expensive first
+      </label>
+    </div>
+  </div>
+
+  <button id="generateXForYShowsBtn" type="button">Generate Code</button>
+  <textarea readonly id="xForYShows_title"></textarea>
+  <textarea readonly id="xForYShows_description"></textarea>
+  <textarea readonly id="xForYShows_code"></textarea>
+</div>
+
+<!-- Save $x off on y+ tix -->
+<div class="form-section" id="xOffYTix">
+  <div class="form-group">
+    <label>Amount ($):</label>
+    <input type="number" id="xOffYTix_amount">
+  </div>
+  <div class="form-group">
+    <label>Minimum ticket count:</label>
+    <input type="number" id="xOffYTix_y">
+  </div>
+
+  <!-- Advanced Settings -->
+  <div class="advanced-settings">
+    <h4>Advanced Settings</h4>
+    <div class="form-group">
+      <label>Only tickets to:</label>
+      <input type="text" id="saveX_onlyTicketsTo" placeholder="Show group or show name">
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="radio" name="saveX_pricing" value="total" checked>
+        Completely Free
+      </label>
+      <label>
+        <input type="radio" name="saveX_pricing" value="base">
+        Base Only
+      </label>
+    </div>
+    <div class="form-group">
+      <label>Order of application:</label>
+      <label>
+        <input type="radio" name="saveX_order" value="cheapest" checked>
+        Cheapest first (default)
+      </label>
+      <label>
+        <input type="radio" name="saveX_order" value="expensive">
+        Most expensive first
+      </label>
+    </div>
+  </div>
+
+  <button id="generateXOffYTixBtn" type="button">Generate Code</button>
+  <textarea readonly id="xOffYTix_title"></textarea>
+  <textarea readonly id="xOffYTix_description"></textarea>
+  <textarea readonly id="xOffYTix_code"></textarea>
+</div>
+
+<!-- Get x Free Tier Ticket -->
+<div class="form-section" id="freeTier">
+  <div class="form-group">
+    <label># of free tickets:</label>
+    <input type="number" id="freeTier_x">
+  </div>
+  <div class="form-group">
+    <label>Tier Name:</label>
+    <input type="text" id="freeTier_tier">
+  </div>
+
+    <!-- Advanced Settings -->
+  <div class="advanced-settings">
+    <h4>Advanced Settings</h4>
+    <div class="form-group">
+      <label>Min Order Size:</label>
+      <input type="number" id="saveX_minOrder">
+    </div>
+    <div class="form-group">
+      <label>Only tickets to:</label>
+      <input type="text" id="saveX_onlyTicketsTo" placeholder="Show group or show name">
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="radio" name="saveX_pricing" value="total" checked>
+        Completely Free
+      </label>
+      <label>
+        <input type="radio" name="saveX_pricing" value="base">
+        Base Only
+      </label>
+    </div>
+    <div class="form-group">
+      <label>Order of application:</label>
+      <label>
+        <input type="radio" name="saveX_order" value="cheapest" checked>
+        Cheapest first (default)
+      </label>
+      <label>
+        <input type="radio" name="saveX_order" value="expensive">
+        Most expensive first
+      </label>
+    </div>
+  </div>
+
+  <button id="generateFreeTierBtn" type="button">Generate Code</button>
+  <textarea readonly id="freeTier_title"></textarea>
+  <textarea readonly id="freeTier_description"></textarea>
+  <textarea readonly id="freeTier_code"></textarea>
+</div>
+
+<script>
+  const couponType = document.getElementById("couponType");
+  const sections = document.querySelectorAll(".form-section");
+
+  couponType.addEventListener("change", () => {
+    sections.forEach(section => section.style.display = "none");
+    const selected = couponType.value;
+    if (selected) {
+      document.getElementById(selected).style.display = "block";
+    }
+  });
+
+  // Save $x off cart
+  document.getElementById("generateSaveXBtn").addEventListener("click", () => {
+    const saveX = document.getElementById("saveX_amount").value;
+    if (saveX) {
+      document.getElementById("saveX_title").value =
+       `Title: Save $${saveX} off cart`;
+      document.getElementById("saveX_description").value =
+      `Description: Save $${saveX} off cart total`;
+      document.getElementById("saveX_code").value =
+      `Code: SET @discount=${saveX}`;
+    } else {
+      document.getElementById("saveX_title").value = "";
+      document.getElementById("saveX_description").value = "";
+      document.getElementById("saveX_code").value = "";
+    }
+  });
+
+  // Save x% off cart
+  document.getElementById("generateSavePercentBtn").addEventListener("click", () => {
+    const percent = document.getElementById("savePercent_percent").value;
+    if (percent) {
+      document.getElementById("savePercent_title").value =
+        `Title: Save ${percent}% off cart`;
+      document.getElementById("savePercent_description").value =  
+      `Description: Save ${percent}% off cart total`;
+      document.getElementById("savePercent_code").value =
+        `Code: SET @discount = dbo.cart_cheapestXSeatsBaseTotal(@shopper, 1000) * ${percent / 100}`;
+    } else {
+      document.getElementById("savePercent_title").value = "";
+      document.getElementById("savePercent_description").value = "";
+      document.getElementById("savePercent_code").value = "";
+    }
+  });
+
+  // Save $x for y shows
+  document.getElementById("generateXForYShowsBtn").addEventListener("click", () => {
+    const xForY_x = document.getElementById("xForYShows_amount").value;
+    const xForY_y = document.getElementById("xForYShows_y").value;
+    if (xForY_x && xForY_y) {
+      document.getElementById("xForYShows_title").value =
+        `Title: $${xForY_x} total for ticket to ${xForY_y} shows`;
+      document.getElementById("xForYShows_description").value =
+        `Description: When purchasing a ticket to ${xForY_y} shows, get all for $${xForY_x} total`;
+      document.getElementById("xForYShows_code").value =
+        `Code: SET @discount = ${xForY_x} * dbo.cart_numSeatsShow(@shopper, dbo.cart_nthShow(@shopper, ${xForY_y}));`;
+    } else {
+      document.getElementById("xForYShows_title").value = "";
+      document.getElementById("xForYShows_description").value = "";
+      document.getElementById("xForYShows_code").value = "";
+    }
+  });
+
+  // Save $x off on y+ tix
+  document.getElementById("generateXOffYTixBtn").addEventListener("click", () => {
+    const xOffY_x = document.getElementById("xOffYTix_amount").value;
+    const xOffY_y = document.getElementById("xOffYTix_y").value;
+    if (xOffY_x && xOffY_y) {
+      document.getElementById("xOffYTix_title").value =
+        `Title: Save $${xOffY_x} off on ${xOffY_y} tix`;
+      document.getElementById("xOffYTix_description").value =
+        `Description: Get $${xOffY_x} off when buying ${xOffY_y} tix or more`;
+      document.getElementById("xOffYTix_code").value =
+        `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${xOffY_y}) >= ${xOffY_y}\nSET @discount = ${xOffY_x}`;
+    } else {
+      document.getElementById("xOffYTix_title").value = "";
+      document.getElementById("xOffYTix_description").value = "";
+      document.getElementById("xOffYTix_code").value = "";
+    }
+  });
+
+  // Get x Free Tier Ticket
+  document.getElementById("generateFreeTierBtn").addEventListener("click", () => {
+    const freeTier_x = document.getElementById("freeTier_x").value;
+    const freeTier_tier = document.getElementById("freeTier_tier").value;
+    if (freeTier_x && freeTier_tier) {
+      document.getElementById("freeTier_title").value =
+        `Title: Get ${freeTier_x} Free ${freeTier_tier} Ticket(s)`;
+        document.getElementById("freeTier_description").value =
+        `Description: Get ${freeTier_x} free ticket(s) for tier "${freeTier_tier}"`;
+        document.getElementById("freeTier_code").value =
+        `Code: SET @discount = dbo.cart_costliestXSeatsTierBaseTotal(@shopper, '${freeTier_tier}', ${freeTier_x})`;
+    } else {
+      document.getElementById("freeTier_title").value = "";
+      document.getElementById("freeTier_description").value = "";
+      document.getElementById("freeTier_code").value = "";
+    }
+  });
+</script>
+</body>
+</html>
