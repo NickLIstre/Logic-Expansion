@@ -37,6 +37,7 @@
       <option value="xForYShows">Total $ for # of shows</option>
       <option value="xOffYTix">Save $ off on # of tix</option>
       <option value="freeTier">Get # of Free Tier tickets</option>
+      <option value="additionalShows">Save % on additional shows</option>
     </select>
   </div>
 
@@ -233,6 +234,42 @@
   <textarea readonly id="freeTier_code"></textarea>
 </div>
 
+<!-- Additional Shows Discount -->
+<div class="form-section" id="additionalShows">
+  <div class="form-group">
+    <label>Discount Percentage (%):</label>
+    <input type="number" id="additionalShows_percent" step="1" min="1">
+  </div>
+  <div class="form-group">
+    <label># of tickets to apply discount on:</label>
+    <input type="number" id="additionalShows_numTix" placeholder="Leave empty for unlimited">
+  </div>
+
+  <!-- Advanced Settings -->
+  <div class="advanced-settings">
+    <h4>Advanced Settings</h4>
+    <div class="form-group">
+      <label>Min Order Size:</label>
+      <input type="number" id="freeTier_minOrder">
+    </div>
+    <div class="form-group">
+    <label>Only tickets to...</label>
+    <input type="text" id="additionalShows_group" placeholder="* Any Show">
+  </div>
+
+  <button id="generateAdditionalShowsBtn" type="button">Generate Code</button>
+  <textarea readonly id="additionalShows_title"></textarea>
+  <textarea readonly id="additionalShows_description"></textarea>
+  <textarea readonly id="additionalShows_code"></textarea>
+</div>
+
+    
+
+
+
+
+
+
 <script>
   const couponType = document.getElementById("couponType");
   const sections = document.querySelectorAll(".form-section");
@@ -331,6 +368,31 @@
       document.getElementById("freeTier_description").value = "";
       document.getElementById("freeTier_code").value = "";
     }
+  });
+
+  // Additional Shows Logic
+  document.getElementById("generateAdditionalShowsBtn").addEventListener("click", () => {
+    const percent = parseInt(document.getElementById("additionalShows_percent").value);
+    const numTix = document.getElementById("additionalShows_numTix").value;
+    const group = document.getElementById("additionalShows_group").value.trim();
+
+    let code = "";
+    if (group) {
+      code = `SET @discount = (\n` +
+             `  dbo.cart_costliestXSeatsShowBaseTotal(@shopper, dbo.cart_nthShowGroup(@shopper, 2, '${group}'), ${numTix || 1000})) * ${percent / 100};`;
+    } else if (numTix) {
+      code = `SET @discount = dbo.cart_costliestXSeatsShowBaseTotal(@shopper, dbo.cart_nthShow(@shopper, 2), ${numTix}) * ${percent / 100};`;
+    } else {
+      code = `SET @discount = dbo.cart_cheapestXSeatsShowBaseTotal(@shopper, dbo.cart_nthShow(@shopper, 2), 1000) * ${percent / 100};`;
+    }
+
+    const desc = group ?
+      `Save ${percent}% on additional shows in ${group}` :
+      `Save ${percent}% on additional shows`;
+
+    document.getElementById("additionalShows_title").value = `Title: ${desc}`;
+    document.getElementById("additionalShows_description").value = `Description: ${desc}`;
+    document.getElementById("additionalShows_code").value = `Code: ${code}`;
   });
 </script>
 </body>
