@@ -282,16 +282,40 @@
     }
   });
 
+  // Advanced Settings Toggle Button
+  document.querySelectorAll('.advanced-settings-toggle').forEach(toggle => {
+    toggle.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target');
+      const target = document.getElementById(targetId);
+      if (target.classList.contains('advanced-settings-collapsed')) {
+        target.classList.remove('advanced-settings-collapsed');
+      } else {
+        target.classList.add('advanced-settings-collapsed');
+      }
+    });
+  });
+
   // Save $x off cart
   document.getElementById("generateSaveXBtn").addEventListener("click", () => {
     const saveX = document.getElementById("saveX_amount").value;
+    const minOrder = document.getElementById("saveX_minOrder").value;
+    
     if (saveX) {
-      document.getElementById("saveX_title").value =
-       `Title: Save $${saveX} off cart`;
-      document.getElementById("saveX_description").value =
-      `Description: Save $${saveX} off cart total`;
-      document.getElementById("saveX_code").value =
-      `Code: SET @discount=${saveX}`;
+      let title, description, code;
+      
+      if (minOrder && minOrder > 0) {
+        title = `Title: Save $${saveX} off when buying ${minOrder} tickets or more`;
+        description = `Description: $${saveX} off when buying ${minOrder} tickets or more`;
+        code = `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${minOrder}) = ${minOrder}\nSET @discount = ${saveX}`;
+      } else {
+        title = `Title: Save $${saveX} off cart`;
+        description = `Description: Save $${saveX} off cart total`;
+        code = `Code: SET @discount = ${saveX}`;
+      }
+      
+      document.getElementById("saveX_title").value = title;
+      document.getElementById("saveX_description").value = description;
+      document.getElementById("saveX_code").value = code;
     } else {
       document.getElementById("saveX_title").value = "";
       document.getElementById("saveX_description").value = "";
@@ -302,13 +326,24 @@
   // Save x% off cart
   document.getElementById("generateSavePercentBtn").addEventListener("click", () => {
     const percent = document.getElementById("savePercent_percent").value;
+    const minOrder = document.getElementById("savePercent_minOrder").value;
+    
     if (percent) {
-      document.getElementById("savePercent_title").value =
-        `Title: Save ${percent}% off cart`;
-      document.getElementById("savePercent_description").value =  
-      `Description: Save ${percent}% off cart total`;
-      document.getElementById("savePercent_code").value =
-        `Code: SET @discount = dbo.cart_cheapestXSeatsBaseTotal(@shopper, 1000) * ${percent / 100}`;
+      let title, description, code;
+      
+      if (minOrder && minOrder > 0) {
+        title = `Title: Save ${percent}% off when buying ${minOrder} tickets or more`;
+        description = `Description: ${percent}% off when buying ${minOrder} tickets or more`;
+        code = `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${minOrder}) = ${minOrder}\nSET @discount = dbo.cart_cheapestXSeatsBaseTotal(@shopper, 1000) * ${percent / 100}`;
+      } else {
+        title = `Title: Save ${percent}% off cart`;
+        description = `Description: Save ${percent}% off cart total`;
+        code = `Code: SET @discount = dbo.cart_cheapestXSeatsBaseTotal(@shopper, 1000) * ${percent / 100}`;
+      }
+      
+      document.getElementById("savePercent_title").value = title;
+      document.getElementById("savePercent_description").value = description;
+      document.getElementById("savePercent_code").value = code;
     } else {
       document.getElementById("savePercent_title").value = "";
       document.getElementById("savePercent_description").value = "";
@@ -320,13 +355,24 @@
   document.getElementById("generateXForYShowsBtn").addEventListener("click", () => {
     const xForY_x = document.getElementById("xForYShows_amount").value;
     const xForY_y = document.getElementById("xForYShows_y").value;
+    const minOrder = document.getElementById("xForYShows_minOrder").value;
+    
     if (xForY_x && xForY_y) {
-      document.getElementById("xForYShows_title").value =
-        `Title: $${xForY_x} total for ticket to ${xForY_y} shows`;
-      document.getElementById("xForYShows_description").value =
-        `Description: When purchasing a ticket to ${xForY_y} shows, get all for $${xForY_x} total`;
-      document.getElementById("xForYShows_code").value =
-        `Code: SET @discount = ${xForY_x} * dbo.cart_numSeatsShow(@shopper, dbo.cart_nthShow(@shopper, ${xForY_y}));`;
+      let title, description, code;
+      
+      if (minOrder && minOrder > 0) {
+        title = `Title: $${xForY_x} total for ticket to ${xForY_y} shows when buying ${minOrder} tickets or more`;
+        description = `Description: When purchasing ${minOrder} or more tickets to ${xForY_y} shows, get all for $${xForY_x} total`;
+        code = `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${minOrder}) = ${minOrder}\nSET @discount = ${xForY_x} * dbo.cart_numSeatsShow(@shopper, dbo.cart_nthShow(@shopper, ${xForY_y}));`;
+      } else {
+        title = `Title: $${xForY_x} total for ticket to ${xForY_y} shows`;
+        description = `Description: When purchasing a ticket to ${xForY_y} shows, get all for $${xForY_x} total`;
+        code = `Code: SET @discount = ${xForY_x} * dbo.cart_numSeatsShow(@shopper, dbo.cart_nthShow(@shopper, ${xForY_y}));`;
+      }
+      
+      document.getElementById("xForYShows_title").value = title;
+      document.getElementById("xForYShows_description").value = description;
+      document.getElementById("xForYShows_code").value = code;
     } else {
       document.getElementById("xForYShows_title").value = "";
       document.getElementById("xForYShows_description").value = "";
@@ -338,6 +384,7 @@
   document.getElementById("generateXOffYTixBtn").addEventListener("click", () => {
     const xOffY_x = document.getElementById("xOffYTix_amount").value;
     const xOffY_y = document.getElementById("xOffYTix_y").value;
+    
     if (xOffY_x && xOffY_y) {
       document.getElementById("xOffYTix_title").value =
         `Title: Save $${xOffY_x} off on ${xOffY_y} tix`;
@@ -356,13 +403,24 @@
   document.getElementById("generateFreeTierBtn").addEventListener("click", () => {
     const freeTier_x = document.getElementById("freeTier_x").value;
     const freeTier_tier = document.getElementById("freeTier_tier").value;
+    const minOrder = document.getElementById("freeTier_minOrder").value;
+    
     if (freeTier_x && freeTier_tier) {
-      document.getElementById("freeTier_title").value =
-        `Title: Get ${freeTier_x} Free ${freeTier_tier} Ticket(s)`;
-        document.getElementById("freeTier_description").value =
-        `Description: Get ${freeTier_x} free ticket(s) for tier "${freeTier_tier}"`;
-        document.getElementById("freeTier_code").value =
-        `Code: SET @discount = dbo.cart_costliestXSeatsTierBaseTotal(@shopper, '${freeTier_tier}', ${freeTier_x})`;
+      let title, description, code;
+      
+      if (minOrder && minOrder > 0) {
+        title = `Title: Get ${freeTier_x} Free ${freeTier_tier} Ticket(s) when buying ${minOrder} tickets or more`;
+        description = `Description: Get ${freeTier_x} free ticket(s) for tier "${freeTier_tier}" when buying ${minOrder} tickets or more`;
+        code = `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${minOrder}) = ${minOrder}\nSET @discount = dbo.cart_costliestXSeatsTierBaseTotal(@shopper, '${freeTier_tier}', ${freeTier_x})`;
+      } else {
+        title = `Title: Get ${freeTier_x} Free ${freeTier_tier} Ticket(s)`;
+        description = `Description: Get ${freeTier_x} free ticket(s) for tier "${freeTier_tier}"`;
+        code = `Code: SET @discount = dbo.cart_costliestXSeatsTierBaseTotal(@shopper, '${freeTier_tier}', ${freeTier_x})`;
+      }
+      
+      document.getElementById("freeTier_title").value = title;
+      document.getElementById("freeTier_description").value = description;
+      document.getElementById("freeTier_code").value = code;
     } else {
       document.getElementById("freeTier_title").value = "";
       document.getElementById("freeTier_description").value = "";
