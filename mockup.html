@@ -285,13 +285,6 @@
   <textarea readonly id="additionalShows_code"></textarea>
 </div>
 
-    
-
-
-
-
-
-
 <script>
   const couponType = document.getElementById("couponType");
   const sections = document.querySelectorAll(".form-section");
@@ -304,18 +297,18 @@
     }
   });
 
-  // Advanced Settings Toggle Button
-  document.querySelectorAll('.advanced-settings-toggle').forEach(toggle => {
-    toggle.addEventListener('click', function() {
-      const targetId = this.getAttribute('data-target');
-      const target = document.getElementById(targetId);
-      if (target.classList.contains('advanced-settings-collapsed')) {
-        target.classList.remove('advanced-settings-collapsed');
-      } else {
-        target.classList.add('advanced-settings-collapsed');
-      }
-    });
-  });
+  // // Advanced Settings Toggle Button
+  // document.querySelectorAll('.advanced-settings-toggle').forEach(toggle => {
+  //   toggle.addEventListener('click', function() {
+  //     const targetId = this.getAttribute('data-target');
+  //     const target = document.getElementById(targetId);
+  //     if (target.classList.contains('advanced-settings-collapsed')) {
+  //       target.classList.remove('advanced-settings-collapsed');
+  //     } else {
+  //       target.classList.add('advanced-settings-collapsed');
+  //     }
+  //   });
+  // });
 
   // Save $x off cart
   document.getElementById("generateSaveXBtn").addEventListener("click", () => {
@@ -384,8 +377,6 @@ document.getElementById("generateXForYShowsBtn").addEventListener("click", () =>
   
   if (xForY_x && xForY_y) {
     let title, description, code;
-    
-    // Determine function name based on settings
     let functionName = "cart_";
     
     // Cheapest or costliest
@@ -399,7 +390,7 @@ document.getElementById("generateXForYShowsBtn").addEventListener("click", () =>
       functionName += "Group";
     }
     
-    // Pricing: Total or BaseTotal
+    // Total or BaseTotal
     functionName += pricing === "total" ? "Total" : "BaseTotal";
 
     functionName += "_maxY";
@@ -444,7 +435,7 @@ document.getElementById("generateXForYShowsBtn").addEventListener("click", () =>
   }
 });
 
- // Save $x off on y+ tix
+// Save $x off on y+ tix
 document.getElementById("generateXOffYTixBtn").addEventListener("click", () => {
   const xOffY_x = document.getElementById("xOffYTix_amount").value;
   const xOffY_y = document.getElementById("xOffYTix_y").value;
@@ -455,7 +446,28 @@ document.getElementById("generateXOffYTixBtn").addEventListener("click", () => {
   if (xOffY_x && xOffY_y) {
     let title, description, code;
     
-    // Build base title and description
+    let functionName = "cart_";
+    
+    // Cheapest or costliest
+    functionName += order === "expensive" ? "costliest" : "cheapest";
+    
+    functionName += "XSeats";
+    
+    // Show group or show
+    if (onlyTicketsTo) {
+      functionName += "Group";
+    }
+    
+    // Total or BaseTotal
+    functionName += pricing === "total" ? "Total" : "BaseTotal";
+    
+    let baseCode = "";
+    if (onlyTicketsTo) {
+      baseCode = `IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${xOffY_y}) >= ${xOffY_y}\nSET @discount = dbo.${functionName}(@shopper, '${onlyTicketsTo}', ${xOffY_x})`;
+    } else {
+      baseCode = `IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${xOffY_y}) >= ${xOffY_y}\nSET @discount = dbo.${functionName}(@shopper, ${xOffY_x})`;
+    }
+
     let baseTitle = `Save $${xOffY_x} off on ${xOffY_y} tix`;
     let baseDescription = `Get $${xOffY_x} off when buying ${xOffY_y} tix or more`;
     
@@ -473,9 +485,6 @@ document.getElementById("generateXOffYTixBtn").addEventListener("click", () => {
       baseTitle += " (most expensive first)";
       baseDescription += " (most expensive tickets first)";
     }
-    
-    // Build code - this coupon type already has the IF condition built in
-    let baseCode = `IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${xOffY_y}) >= ${xOffY_y}\nSET @discount = ${xOffY_x}`;
     
     document.getElementById("xOffYTix_title").value = `Title: ${baseTitle}`;
     document.getElementById("xOffYTix_description").value = `Description: ${baseDescription}`;
@@ -499,27 +508,23 @@ document.getElementById("generateFreeTierBtn").addEventListener("click", () => {
   if (freeTier_x && freeTier_tier) {
     let title, description, code;
     
-    // Determine function name based on settings
     let functionName = "cart_";
     
-    // Order: cheapest or costliest
+    // Cheapest or costliest
     functionName += order === "expensive" ? "costliest" : "cheapest";
-    
-    // Base function
+  
     functionName += "XSeatsTier";
     
-    // Show group or regular show
+    // Show group or show
     if (onlyTicketsTo) {
       functionName += "Group";
     }
     
-    // Pricing: Total or BaseTotal
+    // Total or BaseTotal
     functionName += pricing === "total" ? "Total" : "BaseTotal";
     
-    // Build the code
     let baseCode = `SET @discount = dbo.${functionName}(@shopper, '${freeTier_tier}', ${freeTier_x})`;
-    
-    // Build title and description
+
     let baseTitle = `Get ${freeTier_x} Free ${freeTier_tier} Ticket(s)`;
     let baseDescription = `Get ${freeTier_x} free ticket(s) for tier "${freeTier_tier}"`;
     
@@ -538,7 +543,7 @@ document.getElementById("generateFreeTierBtn").addEventListener("click", () => {
       baseDescription += " (most expensive tickets first)";
     }
     
-    // Handle minOrder
+    // Min Order Size
     if (minOrder && minOrder > 0) {
       title = `Title: ${baseTitle} when buying ${minOrder} tickets or more`;
       description = `Description: ${baseDescription} when buying ${minOrder} tickets or more`;
@@ -571,19 +576,16 @@ document.getElementById("generateAdditionalShowsBtn").addEventListener("click", 
   if (percent) {
     let title, description, code;
     
-    // Determine function name based on settings
     let functionName = "cart_";
     
-    // Order: cheapest or costliest
+    // Cheapest or costliest
     functionName += order === "expensive" ? "costliest" : "cheapest";
     
-    // Base function
     functionName += "XSeatsShow";
     
-    // Pricing: Total or BaseTotal
+    // Total or BaseTotal
     functionName += pricing === "total" ? "Total" : "BaseTotal";
     
-    // Build base code without minOrder first
     let baseCode = "";
     if (group) {
       baseCode = `SET @discount = dbo.${functionName}(@shopper, dbo.cart_nthShowGroup(@shopper, 2, '${group}'), ${numTix || 1000}) * ${percent / 100}`;
@@ -591,7 +593,6 @@ document.getElementById("generateAdditionalShowsBtn").addEventListener("click", 
       baseCode = `SET @discount = dbo.${functionName}(@shopper, dbo.cart_nthShow(@shopper, 2), ${numTix || 1000}) * ${percent / 100}`;
     }
 
-    // Build title and description
     let baseTitle = `Save ${percent}% on additional shows`;
     let baseDescription = `Save ${percent}% on additional shows`;
     
@@ -610,7 +611,7 @@ document.getElementById("generateAdditionalShowsBtn").addEventListener("click", 
       baseDescription += " (most expensive tickets first)";
     }
 
-    // Handle minOrder
+    // Min Order Size
     if (minOrder && minOrder > 0) {
       title = `Title: ${baseTitle} when buying ${minOrder} tickets or more`;
       description = `Description: ${baseDescription} when buying ${minOrder} tickets or more`;
