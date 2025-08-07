@@ -250,11 +250,33 @@
     <h4>Advanced Settings</h4>
     <div class="form-group">
       <label>Min Order Size:</label>
-      <input type="number" id="freeTier_minOrder">
+      <input type="number" id="additionalShows_minOrder">
     </div>
     <div class="form-group">
-    <label>Only tickets to...</label>
-    <input type="text" id="additionalShows_group" placeholder="* Any Show">
+      <label>Only tickets to:</label>
+      <input type="text" id="additionalShows_group" placeholder="Show group or show name">
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="radio" name="additionalShows_pricing" value="total" checked>
+        Completely Free
+      </label>
+      <label>
+        <input type="radio" name="additionalShows_pricing" value="base">
+        Base Only
+      </label>
+    </div>
+    <div class="form-group">
+      <label>Order of application:</label>
+      <label>
+        <input type="radio" name="additionalShows_order" value="cheapest" checked>
+        Cheapest first (default)
+      </label>
+      <label>
+        <input type="radio" name="additionalShows_order" value="expensive">
+        Most expensive first
+      </label>
+    </div>
   </div>
 
   <button id="generateAdditionalShowsBtn" type="button">Generate Code</button>
@@ -352,106 +374,262 @@
   });
 
   // Save $x for y shows
-  document.getElementById("generateXForYShowsBtn").addEventListener("click", () => {
-    const xForY_x = document.getElementById("xForYShows_amount").value;
-    const xForY_y = document.getElementById("xForYShows_y").value;
-    const minOrder = document.getElementById("xForYShows_minOrder").value;
+document.getElementById("generateXForYShowsBtn").addEventListener("click", () => {
+  const xForY_x = document.getElementById("xForYShows_amount").value;
+  const xForY_y = document.getElementById("xForYShows_y").value;
+  const minOrder = document.getElementById("xForYShows_minOrder").value;
+  const onlyTicketsTo = document.getElementById("xForYShows_onlyTicketsTo").value.trim();
+  const pricing = document.querySelector('input[name="xForYShows_pricing"]:checked').value;
+  const order = document.querySelector('input[name="xForYShows_order"]:checked').value;
+  
+  if (xForY_x && xForY_y) {
+    let title, description, code;
     
-    if (xForY_x && xForY_y) {
-      let title, description, code;
-      
-      if (minOrder && minOrder > 0) {
-        title = `Title: $${xForY_x} total for ticket to ${xForY_y} shows when buying ${minOrder} tickets or more`;
-        description = `Description: When purchasing ${minOrder} or more tickets to ${xForY_y} shows, get all for $${xForY_x} total`;
-        code = `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${minOrder}) = ${minOrder}\nSET @discount = ${xForY_x} * dbo.cart_numSeatsShow(@shopper, dbo.cart_nthShow(@shopper, ${xForY_y}));`;
-      } else {
-        title = `Title: $${xForY_x} total for ticket to ${xForY_y} shows`;
-        description = `Description: When purchasing a ticket to ${xForY_y} shows, get all for $${xForY_x} total`;
-        code = `Code: SET @discount = ${xForY_x} * dbo.cart_numSeatsShow(@shopper, dbo.cart_nthShow(@shopper, ${xForY_y}));`;
-      }
-      
-      document.getElementById("xForYShows_title").value = title;
-      document.getElementById("xForYShows_description").value = description;
-      document.getElementById("xForYShows_code").value = code;
-    } else {
-      document.getElementById("xForYShows_title").value = "";
-      document.getElementById("xForYShows_description").value = "";
-      document.getElementById("xForYShows_code").value = "";
-    }
-  });
-
-  // Save $x off on y+ tix
-  document.getElementById("generateXOffYTixBtn").addEventListener("click", () => {
-    const xOffY_x = document.getElementById("xOffYTix_amount").value;
-    const xOffY_y = document.getElementById("xOffYTix_y").value;
+    // Determine function name based on settings
+    let functionName = "cart_";
     
-    if (xOffY_x && xOffY_y) {
-      document.getElementById("xOffYTix_title").value =
-        `Title: Save $${xOffY_x} off on ${xOffY_y} tix`;
-      document.getElementById("xOffYTix_description").value =
-        `Description: Get $${xOffY_x} off when buying ${xOffY_y} tix or more`;
-      document.getElementById("xOffYTix_code").value =
-        `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${xOffY_y}) >= ${xOffY_y}\nSET @discount = ${xOffY_x}`;
-    } else {
-      document.getElementById("xOffYTix_title").value = "";
-      document.getElementById("xOffYTix_description").value = "";
-      document.getElementById("xOffYTix_code").value = "";
-    }
-  });
-
-  // Get x Free Tier Ticket
-  document.getElementById("generateFreeTierBtn").addEventListener("click", () => {
-    const freeTier_x = document.getElementById("freeTier_x").value;
-    const freeTier_tier = document.getElementById("freeTier_tier").value;
-    const minOrder = document.getElementById("freeTier_minOrder").value;
+    // Cheapest or costliest
+    functionName += order === "expensive" ? "costliest" : "cheapest";
     
-    if (freeTier_x && freeTier_tier) {
-      let title, description, code;
-      
-      if (minOrder && minOrder > 0) {
-        title = `Title: Get ${freeTier_x} Free ${freeTier_tier} Ticket(s) when buying ${minOrder} tickets or more`;
-        description = `Description: Get ${freeTier_x} free ticket(s) for tier "${freeTier_tier}" when buying ${minOrder} tickets or more`;
-        code = `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${minOrder}) = ${minOrder}\nSET @discount = dbo.cart_costliestXSeatsTierBaseTotal(@shopper, '${freeTier_tier}', ${freeTier_x})`;
-      } else {
-        title = `Title: Get ${freeTier_x} Free ${freeTier_tier} Ticket(s)`;
-        description = `Description: Get ${freeTier_x} free ticket(s) for tier "${freeTier_tier}"`;
-        code = `Code: SET @discount = dbo.cart_costliestXSeatsTierBaseTotal(@shopper, '${freeTier_tier}', ${freeTier_x})`;
-      }
-      
-      document.getElementById("freeTier_title").value = title;
-      document.getElementById("freeTier_description").value = description;
-      document.getElementById("freeTier_code").value = code;
-    } else {
-      document.getElementById("freeTier_title").value = "";
-      document.getElementById("freeTier_description").value = "";
-      document.getElementById("freeTier_code").value = "";
+    // Base function
+    functionName += "XSeatsPerShow";
+    
+    // Show group or regular show
+    if (onlyTicketsTo) {
+      functionName += "Group";
     }
-  });
+    
+    // Pricing: Total or BaseTotal
+    functionName += pricing === "total" ? "Total" : "BaseTotal";
 
-  // Additional Shows Logic
-  document.getElementById("generateAdditionalShowsBtn").addEventListener("click", () => {
-    const percent = parseInt(document.getElementById("additionalShows_percent").value);
-    const numTix = document.getElementById("additionalShows_numTix").value;
-    const group = document.getElementById("additionalShows_group").value.trim();
+    functionName += "_maxY";
+    
+    let baseCode = `SET @discount = dbo.[${functionName}](@shopper, 1, ${xForY_y}) - ${xForY_x}`;
+    let baseTitle = `$${xForY_x} total for ticket to ${xForY_y} shows`;
+    let baseDescription = `When purchasing a ticket to ${xForY_y} shows, get all for $${xForY_x} total`;
+    
+    if (onlyTicketsTo) {
+      baseTitle += ` in ${onlyTicketsTo}`;
+      baseDescription += ` in ${onlyTicketsTo}`;
+    }
+    
+    if (pricing === "base") {
+      baseTitle += " (base price only)";
+      baseDescription += " (base price only)";
+    }
+    
+    if (order === "expensive") {
+      baseTitle += " (most expensive first)";
+      baseDescription += " (most expensive tickets first)";
+    }
+    
+    // Min Order Size
+    if (minOrder && minOrder > 0) {
+      title = `Title: ${baseTitle} when buying ${minOrder} tickets or more`;
+      description = `Description: ${baseDescription} when buying ${minOrder} tickets or more`;
+      code = `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${minOrder}) = ${minOrder}\n${baseCode}`;
+    } else {
+      title = `Title: ${baseTitle}`;
+      description = `Description: ${baseDescription}`;
+      code = `Code: ${baseCode}`;
+    }
+    
+    document.getElementById("xForYShows_title").value = title;
+    document.getElementById("xForYShows_description").value = description;
+    document.getElementById("xForYShows_code").value = code;
+  } else {
+    document.getElementById("xForYShows_title").value = "";
+    document.getElementById("xForYShows_description").value = "";
+    document.getElementById("xForYShows_code").value = "";
+  }
+});
 
-    let code = "";
+ // Save $x off on y+ tix
+document.getElementById("generateXOffYTixBtn").addEventListener("click", () => {
+  const xOffY_x = document.getElementById("xOffYTix_amount").value;
+  const xOffY_y = document.getElementById("xOffYTix_y").value;
+  const onlyTicketsTo = document.getElementById("xOffYTix_onlyTicketsTo").value.trim();
+  const pricing = document.querySelector('input[name="xOffYTix_pricing"]:checked').value;
+  const order = document.querySelector('input[name="xOffYTix_order"]:checked').value;
+  
+  if (xOffY_x && xOffY_y) {
+    let title, description, code;
+    
+    // Build base title and description
+    let baseTitle = `Save $${xOffY_x} off on ${xOffY_y} tix`;
+    let baseDescription = `Get $${xOffY_x} off when buying ${xOffY_y} tix or more`;
+    
+    if (onlyTicketsTo) {
+      baseTitle += ` in ${onlyTicketsTo}`;
+      baseDescription += ` in ${onlyTicketsTo}`;
+    }
+    
+    if (pricing === "base") {
+      baseTitle += " (base price only)";
+      baseDescription += " (base price only)";
+    }
+    
+    if (order === "expensive") {
+      baseTitle += " (most expensive first)";
+      baseDescription += " (most expensive tickets first)";
+    }
+    
+    // Build code - this coupon type already has the IF condition built in
+    let baseCode = `IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${xOffY_y}) >= ${xOffY_y}\nSET @discount = ${xOffY_x}`;
+    
+    document.getElementById("xOffYTix_title").value = `Title: ${baseTitle}`;
+    document.getElementById("xOffYTix_description").value = `Description: ${baseDescription}`;
+    document.getElementById("xOffYTix_code").value = `Code: ${baseCode}`;
+  } else {
+    document.getElementById("xOffYTix_title").value = "";
+    document.getElementById("xOffYTix_description").value = "";
+    document.getElementById("xOffYTix_code").value = "";
+  }
+});
+
+// Get x Free Tier Ticket
+document.getElementById("generateFreeTierBtn").addEventListener("click", () => {
+  const freeTier_x = document.getElementById("freeTier_x").value;
+  const freeTier_tier = document.getElementById("freeTier_tier").value;
+  const minOrder = document.getElementById("freeTier_minOrder").value;
+  const onlyTicketsTo = document.getElementById("freeTier_onlyTicketsTo").value.trim();
+  const pricing = document.querySelector('input[name="freeTier_pricing"]:checked').value;
+  const order = document.querySelector('input[name="freeTier_order"]:checked').value;
+  
+  if (freeTier_x && freeTier_tier) {
+    let title, description, code;
+    
+    // Determine function name based on settings
+    let functionName = "cart_";
+    
+    // Order: cheapest or costliest
+    functionName += order === "expensive" ? "costliest" : "cheapest";
+    
+    // Base function
+    functionName += "XSeatsTier";
+    
+    // Show group or regular show
+    if (onlyTicketsTo) {
+      functionName += "Group";
+    }
+    
+    // Pricing: Total or BaseTotal
+    functionName += pricing === "total" ? "Total" : "BaseTotal";
+    
+    // Build the code
+    let baseCode = `SET @discount = dbo.${functionName}(@shopper, '${freeTier_tier}', ${freeTier_x})`;
+    
+    // Build title and description
+    let baseTitle = `Get ${freeTier_x} Free ${freeTier_tier} Ticket(s)`;
+    let baseDescription = `Get ${freeTier_x} free ticket(s) for tier "${freeTier_tier}"`;
+    
+    if (onlyTicketsTo) {
+      baseTitle += ` in ${onlyTicketsTo}`;
+      baseDescription += ` in ${onlyTicketsTo}`;
+    }
+    
+    if (pricing === "base") {
+      baseTitle += " (base price only)";
+      baseDescription += " (base price only)";
+    }
+    
+    if (order === "expensive") {
+      baseTitle += " (most expensive first)";
+      baseDescription += " (most expensive tickets first)";
+    }
+    
+    // Handle minOrder
+    if (minOrder && minOrder > 0) {
+      title = `Title: ${baseTitle} when buying ${minOrder} tickets or more`;
+      description = `Description: ${baseDescription} when buying ${minOrder} tickets or more`;
+      code = `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${minOrder}) = ${minOrder}\n${baseCode}`;
+    } else {
+      title = `Title: ${baseTitle}`;
+      description = `Description: ${baseDescription}`;
+      code = `Code: ${baseCode}`;
+    }
+    
+    document.getElementById("freeTier_title").value = title;
+    document.getElementById("freeTier_description").value = description;
+    document.getElementById("freeTier_code").value = code;
+  } else {
+    document.getElementById("freeTier_title").value = "";
+    document.getElementById("freeTier_description").value = "";
+    document.getElementById("freeTier_code").value = "";
+  }
+});
+
+// Additional Shows Logic
+document.getElementById("generateAdditionalShowsBtn").addEventListener("click", () => {
+  const percent = parseInt(document.getElementById("additionalShows_percent").value);
+  const numTix = document.getElementById("additionalShows_numTix").value;
+  const group = document.getElementById("additionalShows_group").value.trim();
+  const minOrder = document.getElementById("additionalShows_minOrder").value;
+  const pricing = document.querySelector('input[name="additionalShows_pricing"]:checked').value;
+  const order = document.querySelector('input[name="additionalShows_order"]:checked').value;
+
+  if (percent) {
+    let title, description, code;
+    
+    // Determine function name based on settings
+    let functionName = "cart_";
+    
+    // Order: cheapest or costliest
+    functionName += order === "expensive" ? "costliest" : "cheapest";
+    
+    // Base function
+    functionName += "XSeatsShow";
+    
+    // Pricing: Total or BaseTotal
+    functionName += pricing === "total" ? "Total" : "BaseTotal";
+    
+    // Build base code without minOrder first
+    let baseCode = "";
     if (group) {
-      code = `SET @discount = (\n` +
-             `  dbo.cart_costliestXSeatsShowBaseTotal(@shopper, dbo.cart_nthShowGroup(@shopper, 2, '${group}'), ${numTix || 1000})) * ${percent / 100};`;
-    } else if (numTix) {
-      code = `SET @discount = dbo.cart_costliestXSeatsShowBaseTotal(@shopper, dbo.cart_nthShow(@shopper, 2), ${numTix}) * ${percent / 100};`;
+      baseCode = `SET @discount = dbo.${functionName}(@shopper, dbo.cart_nthShowGroup(@shopper, 2, '${group}'), ${numTix || 1000}) * ${percent / 100}`;
     } else {
-      code = `SET @discount = dbo.cart_cheapestXSeatsShowBaseTotal(@shopper, dbo.cart_nthShow(@shopper, 2), 1000) * ${percent / 100};`;
+      baseCode = `SET @discount = dbo.${functionName}(@shopper, dbo.cart_nthShow(@shopper, 2), ${numTix || 1000}) * ${percent / 100}`;
     }
 
-    const desc = group ?
-      `Save ${percent}% on additional shows in ${group}` :
-      `Save ${percent}% on additional shows`;
+    // Build title and description
+    let baseTitle = `Save ${percent}% on additional shows`;
+    let baseDescription = `Save ${percent}% on additional shows`;
+    
+    if (group) {
+      baseTitle += ` in ${group}`;
+      baseDescription += ` in ${group}`;
+    }
+    
+    if (pricing === "base") {
+      baseTitle += " (base price only)";
+      baseDescription += " (base price only)";
+    }
+    
+    if (order === "expensive") {
+      baseTitle += " (most expensive first)";
+      baseDescription += " (most expensive tickets first)";
+    }
 
-    document.getElementById("additionalShows_title").value = `Title: ${desc}`;
-    document.getElementById("additionalShows_description").value = `Description: ${desc}`;
-    document.getElementById("additionalShows_code").value = `Code: ${code}`;
-  });
+    // Handle minOrder
+    if (minOrder && minOrder > 0) {
+      title = `Title: ${baseTitle} when buying ${minOrder} tickets or more`;
+      description = `Description: ${baseDescription} when buying ${minOrder} tickets or more`;
+      code = `Code: IF dbo.MinOf(dbo.cart_NumSeats(@shopper), ${minOrder}) = ${minOrder}\n${baseCode}`;
+    } else {
+      title = `Title: ${baseTitle}`;
+      description = `Description: ${baseDescription}`;
+      code = `Code: ${baseCode}`;
+    }
+
+    document.getElementById("additionalShows_title").value = title;
+    document.getElementById("additionalShows_description").value = description;
+    document.getElementById("additionalShows_code").value = code;
+  } else {
+    document.getElementById("additionalShows_title").value = "";
+    document.getElementById("additionalShows_description").value = "";
+    document.getElementById("additionalShows_code").value = "";
+  }
+});
 </script>
 </body>
 </html>
