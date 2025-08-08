@@ -85,7 +85,7 @@
   <textarea readonly id="savePercent_code"></textarea>
 </div>
 
-<!-- Save $x for y shows -->
+<!-- Total $x for y# of shows -->
 <div class="form-section" id="xForYShows">
   <div class="form-group">
     <label>Total price for all shows ($):</label>
@@ -105,7 +105,7 @@
     </div>
     <div class="form-group">
       <label>Only tickets to:</label>
-      <input type="text" id="xForYShows_onlyTicketsTo" placeholder="Show group or show name">
+      <input type="text" id="xForYShows_onlyTicketsTo" placeholder="Show group">
     </div>
     <div class="form-group">
       <label>
@@ -136,7 +136,7 @@
   <textarea readonly id="xForYShows_code"></textarea>
 </div>
 
-<!-- Save $x off on y+ tix -->
+<!-- Save $x off on y# tix -->
 <div class="form-section" id="xOffYTix">
   <div class="form-group">
     <label>Amount ($):</label>
@@ -183,7 +183,7 @@
   <textarea readonly id="xOffYTix_code"></textarea>
 </div>
 
-<!-- Get x Free Tier Ticket -->
+<!-- Get x# Free Tier Ticket -->
 <div class="form-section" id="freeTier">
   <div class="form-group">
     <label># of free tickets:</label>
@@ -234,7 +234,7 @@
   <textarea readonly id="freeTier_code"></textarea>
 </div>
 
-<!-- Additional Shows Discount -->
+<!-- Save x% on additional shows -->
 <div class="form-section" id="additionalShows">
   <div class="form-group">
     <label>Discount Percentage (%):</label>
@@ -366,7 +366,7 @@
     }
   });
 
-  // Save $x for y shows
+  // Total $x for y# of shows
 document.getElementById("generateXForYShowsBtn").addEventListener("click", () => {
   const xForY_x = document.getElementById("xForYShows_amount").value;
   const xForY_y = document.getElementById("xForYShows_y").value;
@@ -435,7 +435,7 @@ document.getElementById("generateXForYShowsBtn").addEventListener("click", () =>
   }
 });
 
-// Save $x off on y+ tix
+// Save $x off on y+# tix
 document.getElementById("generateXOffYTixBtn").addEventListener("click", () => {
   const xOffY_x = document.getElementById("xOffYTix_amount").value;
   const xOffY_y = document.getElementById("xOffYTix_y").value;
@@ -496,7 +496,7 @@ document.getElementById("generateXOffYTixBtn").addEventListener("click", () => {
   }
 });
 
-// Get x Free Tier Ticket
+// Get x# of Free Tier Tickets
 document.getElementById("generateFreeTierBtn").addEventListener("click", () => {
   const freeTier_x = document.getElementById("freeTier_x").value;
   const freeTier_tier = document.getElementById("freeTier_tier").value;
@@ -564,7 +564,7 @@ document.getElementById("generateFreeTierBtn").addEventListener("click", () => {
   }
 });
 
-// Additional Shows Logic
+// Save x% on additional shows
 document.getElementById("generateAdditionalShowsBtn").addEventListener("click", () => {
   const percent = parseInt(document.getElementById("additionalShows_percent").value);
   const numTix = document.getElementById("additionalShows_numTix").value;
